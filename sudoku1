@@ -1,0 +1,89 @@
+def sudoku(puzzle):
+	"""return the solved puzzle as a 2d array of 9 x 9
+	puzzle is list of 9 lists
+	e.g. [
+			[5, 3, 0, 0, 7, 0, 0, 0, 0],
+			[6, 0, 0, 1, 9, 5, 0, 0, 0],
+			[0, 9, 8, 0, 0, 0, 0, 6, 0],
+			[8, 0, 0, 0, 6, 0, 0, 0, 3],
+			[4, 0, 0, 8, 0, 3, 0, 0, 1],
+			[7, 0, 0, 0, 2, 0, 0, 0, 6], 
+			[0, 6, 0, 0, 0, 0, 2, 8, 0],
+			[0, 0, 0, 4, 1, 9, 0, 0, 5],
+			[0, 0, 0, 0, 8, 0, 0, 7, 9]]	
+	"""
+	can = [[set()]*9 for i in range(9)] # possible values grid as sets
+	
+	def solved():  # sum of digits in correct completed grid is 405
+		return sum(map(sum, puzzle)) == 405
+		
+	def row(i):  # get values in a given row
+		return puzzle[i]
+
+	def col(j):  # get values in a given column
+		return [r[j] for r in puzzle]
+
+	def box(i, j, grid):  # get values box containing given i, j in given grid
+		b_i = 3 * (i // 3)
+		b_y = 3 * (j // 3)
+		return [
+			grid[i][j] for i in range(b_i, b_i + 3) for j in range(b_y, b_y + 3)
+		]
+
+	# check what can be in a given position
+	while True:
+		new = False
+		for i, r in enumerate(puzzle):
+			for j, c in enumerate(r):
+				if puzzle[i][j] == 0:  # still unknown
+					# what can be at i, j
+					can[i][j] = set(range(1, 10)) - set(row(i)) - set(col(j)) - set(box(i, j, puzzle))
+					if len(can[i][j]) == 1:  # only one possibility
+						puzzle[i][j] = list(can[i][j])[0]  # enter value into grid
+						#print(f'Found {puzzle[i][j]} for position {i}, {j}')
+						new = True  # made progress
+		if not new: break  # no progress for element i, j
+	
+	# check what can be done in each box
+	pr(can)
+	input('Continue?')
+	for b in range(9):  #for each box
+		i = 3 * (b // 3)  # get one i and j pair
+		j = 3 * (b % 3)
+		# find all possible values for each cell in box
+		l = box(i, j, can)  # as list of sets
+		print([(v, i) for i, s in enumerate(l) for v in range(1, 10) if s.count(v) == 1])
+		
+		
+		a = [i for s in l for i in s]  # all values
+		vs = (set().union(*l))  # unique values
+		x = [a.count(v) for v in vs]
+		#print(x)
+		
+	
+	
+	
+	
+	
+	
+	print(f'{"Not " if not solved() else ""}Solved!')
+	return puzzle
+
+
+def get_puzzles(file):
+	with open(file) as f:
+		ps = []
+		for line in f:
+			ps.append([list(map(int, list(line.rstrip('\n').replace('.', '0')[9*i:9*i+9]))) for i in range(9)])
+	return ps
+
+def pr(grid):
+	for row in grid:
+		print(*row)
+	print()
+
+ps = get_puzzles('easy50.txt')
+for p in ps[0:2]:
+	pr(p)
+	# solve
+	pr(sudoku(p))
